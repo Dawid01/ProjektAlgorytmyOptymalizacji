@@ -1,3 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using TSP;
 
-Console.WriteLine("Hello, World!");
+String basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "Graphs\\";
+Graph graph = GraphReader.ReadGraph(basePath + "a280.tsp");
+Console.WriteLine(graph.ToString());
