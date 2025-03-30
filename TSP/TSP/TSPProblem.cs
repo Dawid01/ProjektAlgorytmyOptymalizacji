@@ -1,6 +1,6 @@
 ﻿namespace TSP;
 
-public class TSPProblem : GeneticProblem<List<int>>
+public class TSPProblem : IGeneticProblem<List<int>>
 {
     private readonly Graph _graph;
     private readonly Random _random = new Random();

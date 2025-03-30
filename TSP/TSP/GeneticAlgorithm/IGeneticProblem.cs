@@ -1,6 +1,6 @@
 ﻿namespace TSP;
 
-public interface GeneticProblem<T>
+public interface IGeneticProblem<T>
 {
     List<T> GenerateInitialPopulation(int size);
     double EvaluateFitness(T individual);

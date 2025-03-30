@@ -2,12 +2,12 @@
 
 public class GeneticAlgorithm<T>
 {
-    private readonly GeneticProblem<T> _problem;
+    private readonly IGeneticProblem<T> _problem;
     private readonly int _populationSize;
     private readonly int _generations;
     private readonly double _mutationRate;
 
-    public GeneticAlgorithm(GeneticProblem<T> problem, int populationSize, int generations, double mutationRate)
+    public GeneticAlgorithm(IGeneticProblem<T> problem, int populationSize, int generations, double mutationRate)
     {
         _problem = problem;
         _populationSize = populationSize;
