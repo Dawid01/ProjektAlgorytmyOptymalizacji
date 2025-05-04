@@ -2,11 +2,11 @@
 
 public struct Node
 {
-    public int Index;
-    public int X;
-    public int Y;
+    public int Index { get; }
+    public double X { get; }
+    public double Y { get; }
 
-    public Node(int index, int x, int y)
+    public Node(int index, double x, double y)
     {
         Index = index;
         X = x;

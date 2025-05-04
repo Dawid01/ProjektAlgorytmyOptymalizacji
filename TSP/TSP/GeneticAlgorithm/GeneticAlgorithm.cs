@@ -44,4 +44,5 @@ public class GeneticAlgorithm<T>
 
         return population.First();
     }
+
 }

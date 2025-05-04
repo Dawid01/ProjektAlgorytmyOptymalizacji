@@ -37,7 +37,6 @@ public class TSPProblem : IGeneticProblem<List<int>>
         distance += GetDistance(_graph.Nodes[individual.Last()], _graph.Nodes[individual.First()]);
         return 1 / distance;
     }
-
     public List<int> Crossover(List<int> parent1, List<int> parent2)
     {
         int size = parent1.Count;
