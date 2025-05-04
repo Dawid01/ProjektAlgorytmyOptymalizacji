@@ -1,5 +1,13 @@
 ﻿namespace TSP;
 
+
+public enum CrossoverType
+{
+    OX,
+    PMX, 
+    CX,
+    UX
+}
 public class GeneticAlgorithm<T>
 {
     private readonly IGeneticProblem<T> _problem;
@@ -8,8 +16,9 @@ public class GeneticAlgorithm<T>
     private readonly double _mutationRate;
     private readonly double _crossoverRate;
     private readonly int _eliteCount;
+    private readonly CrossoverType _crossoverType;
 
-    public GeneticAlgorithm(IGeneticProblem<T> problem, int populationSize, int generations, double mutationRate, double crossoverRate, int eliteCount)
+    public GeneticAlgorithm(IGeneticProblem<T> problem, int populationSize, int generations, double mutationRate, double crossoverRate, int eliteCount, CrossoverType crossoverType)
     {
         _problem = problem;
         _populationSize = populationSize;
@@ -17,6 +26,7 @@ public class GeneticAlgorithm<T>
         _mutationRate = mutationRate;
         _crossoverRate = crossoverRate;
         _eliteCount = eliteCount;
+        _crossoverType = crossoverType;
 
     }
 
@@ -41,7 +51,7 @@ public class GeneticAlgorithm<T>
 
                 if (new Random().NextDouble() < _crossoverRate)
                 {
-                    child = _problem.Crossover(parent1, parent2);
+                    child = _problem.Crossover(parent1, parent2, _crossoverType);
                 }
                 else
                 {
