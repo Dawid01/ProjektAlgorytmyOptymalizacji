@@ -4,9 +4,11 @@ String basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..
 string[] graphs = Directory.GetFiles(basePath, "*", SearchOption.TopDirectoryOnly);
 List<int> skipedGraphs = new List<int>();
 
-const int populationSize = 200; //50-500
-const int maxGenerations = 1000; //500 - 5000
-const double mutationRate = 0.05; // 0.01- 0.1
+const int populationSize = 300; //50-500
+const int maxGenerations = 3000; //500 - 5000
+const double mutationRate = 0.02; // 0.01- 0.1
+const double crossoverRate = 0.9; // 0.7 - 1
+const int eliteCount = 2; // 1 - 5
 
 // for (int i = 0; i < 2; i++)
 // {
@@ -32,7 +34,7 @@ const double mutationRate = 0.05; // 0.01- 0.1
 
 Graph graph = GraphReader.ReadGraph(graphs[0]);
 var tspProblem = new TSPProblem(graph);
-var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate);
+var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate, crossoverRate, eliteCount);
 List<int> bestSolution = ga.Run();
 Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
 

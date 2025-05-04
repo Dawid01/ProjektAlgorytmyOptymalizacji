@@ -6,13 +6,18 @@ public class GeneticAlgorithm<T>
     private readonly int _populationSize;
     private readonly int _generations;
     private readonly double _mutationRate;
+    private readonly double _crossoverRate;
+    private readonly int _eliteCount;
 
-    public GeneticAlgorithm(IGeneticProblem<T> problem, int populationSize, int generations, double mutationRate)
+    public GeneticAlgorithm(IGeneticProblem<T> problem, int populationSize, int generations, double mutationRate, double crossoverRate, int eliteCount)
     {
         _problem = problem;
         _populationSize = populationSize;
         _generations = generations;
         _mutationRate = mutationRate;
+        _crossoverRate = crossoverRate;
+        _eliteCount = eliteCount;
+
     }
 
     public T Run()
@@ -25,13 +30,23 @@ public class GeneticAlgorithm<T>
             if (_problem.ShouldStop(population, generation))
                 return population.First();
 
-            List<T> newPopulation = new List<T> { population.First() };
-
+            List<T> newPopulation = population.Take(_eliteCount).ToList();
+            
             while (newPopulation.Count < _populationSize)
             {
                 T parent1 = population[new Random().Next(population.Count / 2)];
                 T parent2 = population[new Random().Next(population.Count / 2)];
-                T child = _problem.Crossover(parent1, parent2);
+                
+                T child;
+
+                if (new Random().NextDouble() < _crossoverRate)
+                {
+                    child = _problem.Crossover(parent1, parent2);
+                }
+                else
+                {
+                    child = (new Random().Next(2) == 0) ? parent1 : parent2;
+                }
 
                 if (new Random().NextDouble() < _mutationRate)
                     child = _problem.Mutate(child);
