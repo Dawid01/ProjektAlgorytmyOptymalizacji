@@ -1,29 +1,44 @@
 ﻿using TSP;
 
 String basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "TSP_DATA\\data\\";
-//Console.WriteLine(graph.ToString());
-
-
-
-
-
 string[] graphs = Directory.GetFiles(basePath, "*", SearchOption.TopDirectoryOnly);
+List<int> skipedGraphs = new List<int>();
 
+const int populationSize = 200; //50-500
+const int maxGenerations = 1000; //500 - 5000
+const double mutationRate = 0.05; // 0.01- 0.1
 
-for (int i = 0; i < 5; i++)
-{
-    Graph graph = GraphReader.ReadGraph(graphs[i]);
-    var tspProblem = new TSPProblem(graph);
-    var ga = new GeneticAlgorithm<List<int>>(tspProblem, 100, 1000, 20);
-    List<int> bestSolution = ga.Run();
-    Console.WriteLine($"{graph.Name}, Dystans: {1/(tspProblem.EvaluateFitness(bestSolution))}");
-}
-
-
-
-// for (int popSize = 100; popSize <= 1000; popSize += 100)
+// for (int i = 0; i < 2; i++)
 // {
-//     var ga = new GeneticAlgorithm<List<int>>(tspProblem, popSize, 1000, 0.05);
+//     try
+//     {
+//         Graph graph = GraphReader.ReadGraph(graphs[i]);
+//         var tspProblem = new TSPProblem(graph);
+//         var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate);
+//         List<int> bestSolution = ga.Run();
+//         Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
+//     }
+//     catch (Exception ex)
+//     {
+//        skipedGraphs.Add(i);
+//     }
+// }
+//
+// for(int i = 0; i < skipedGraphs.Count; i++)
+// {
+//     Console.WriteLine($"{i + 1}. Pominięty plik: {graphs[skipedGraphs[i]]}");
+// }
+
+
+Graph graph = GraphReader.ReadGraph(graphs[0]);
+var tspProblem = new TSPProblem(graph);
+var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate);
+List<int> bestSolution = ga.Run();
+Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
+
+// for (int value = 100; value <= 1000; value += 100)
+// {
+//     var ga = new GeneticAlgorithm<List<int>>(tspProblem, 80, 1000, 0.002);
 //     List<int> bestSolution = ga.Run();
-//     Console.WriteLine($"Populacja: {popSize}, Trasa: {string.Join(" -> ", bestSolution)}, Dystans: {(1 / tspProblem.EvaluateFitness(bestSolution))}");
+//     Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
 // }
