@@ -85,35 +85,38 @@ public class TSPProblem : IGeneticProblem<List<int>>
     public List<int> CrossoverPMX(List<int> parent1, List<int> parent2)
     {
         int size = parent1.Count;
-        List<int> child = new List<int>(new int[size]);
+        List<int> child = Enumerable.Repeat(-1, size).ToList();
 
         int start = _random.Next(size / 2);
-        int end = _random.Next(start, size);
+        int end = _random.Next(start + 1, size);
+
+        for (int i = start; i < end; i++)
+            child[i] = parent1[i];
 
         for (int i = start; i < end; i++)
         {
-            child[i] = parent1[i];
+            int gene = parent2[i];
+            if (!child.Contains(gene))
+            {
+                int pos = i;
+                while (child[pos] != -1)
+                {
+                    int conflictGene = parent1[pos];
+                    pos = parent2.IndexOf(conflictGene);
+                }
+                child[pos] = gene;
+            }
         }
 
         for (int i = 0; i < size; i++)
         {
-            if (!child.Contains(parent2[i]))
-            {
-                int idx = (i < start || i >= end) ? i : -1;
-
-                if (idx == -1)
-                {
-                    idx = 0;
-                    while (child[idx] != 0)
-                        idx = (idx + 1) % size; 
-                }
-        
-                child[idx] = parent2[i];
-            }
+            if (child[i] == -1)
+                child[i] = parent2[i];
         }
-        
+
         return child;
     }
+
     
     
     // Crossover z CX (Cycle Crossover)
@@ -152,15 +155,38 @@ public class TSPProblem : IGeneticProblem<List<int>>
     public List<int> CrossoverUX(List<int> parent1, List<int> parent2)
     {
         int size = parent1.Count;
+        bool[] mask = new bool[size];
+        HashSet<int> used = new HashSet<int>();
         List<int> child = new List<int>(new int[size]);
 
         for (int i = 0; i < size; i++)
+            mask[i] = _random.Next(2) == 0;
+
+        for (int i = 0; i < size; i++)
         {
-            child[i] = (_random.Next(2) == 0) ? parent1[i] : parent2[i];
+            if (mask[i])
+            {
+                child[i] = parent1[i];
+                used.Add(parent1[i]);
+            }
+        }
+
+        int p2Index = 0;
+        for (int i = 0; i < size; i++)
+        {
+            if (!mask[i])
+            {
+                while (used.Contains(parent2[p2Index]))
+                    p2Index++;
+
+                child[i] = parent2[p2Index];
+                used.Add(parent2[p2Index]);
+            }
         }
 
         return child;
     }
+
 
 
 
@@ -178,7 +204,7 @@ public class TSPProblem : IGeneticProblem<List<int>>
 
     public bool ShouldStop(List<List<int>> population, int generation)
     {
-        return generation > 10000;
+        return generation > 10000;  
     }
 
     private double GetDistance(Node a, Node b)

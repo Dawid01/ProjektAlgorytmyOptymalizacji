@@ -4,7 +4,7 @@ String basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..
 string[] graphs = Directory.GetFiles(basePath, "*", SearchOption.TopDirectoryOnly);
 List<int> skipedGraphs = new List<int>();
 
-const int populationSize = 500; //50-500
+const int populationSize = 50; //50-500
 const int maxGenerations = 1000; //500 - 5000
 const double mutationRate = 0.02; // 0.01- 0.1
 const double crossoverRate = 0.9; // 0.7 - 1
@@ -14,6 +14,9 @@ const int eliteCount = 2; // 1 - 5
 //RunFromFile(0, CrossoverType.OX);
 //RunFromFiles(CrossoverType.OX);
 TestRun(CrossoverType.CX);
+TestRun(CrossoverType.OX);
+TestRun(CrossoverType.PMX);
+TestRun(CrossoverType.UX);
 
 
 void RunFromFile(int fileIndex, CrossoverType crossoverType)
@@ -64,7 +67,7 @@ void RunFromFiles(CrossoverType crossoverType)
 void TestRun(CrossoverType crossoverType)
 {
     Graph testGraph = new Graph(
-        "TSP TEST", "TEST", 6,
+        "TSP TEST", "TEST", 10,
         new Node[]
         {
             new Node(0, 0, 0),
@@ -72,7 +75,11 @@ void TestRun(CrossoverType crossoverType)
             new Node(2, 10, 10),
             new Node(3, 0, 4),
             new Node(4, 2, 5),
-            new Node(5, 3, 9)
+            new Node(5, 3, 9),
+            new Node(6, 12, 9),
+            new Node(7, 5, 4),
+            new Node(8, 3, 2),
+            new Node(9, 1, 10)
         });
 
     var tspProblem = new TSPProblem(testGraph);
