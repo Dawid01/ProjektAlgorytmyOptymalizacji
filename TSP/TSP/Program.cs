@@ -5,47 +5,81 @@ string[] graphs = Directory.GetFiles(basePath, "*", SearchOption.TopDirectoryOnl
 List<int> skipedGraphs = new List<int>();
 
 const int populationSize = 500; //50-500
-const int maxGenerations = 7000; //500 - 5000
+const int maxGenerations = 1000; //500 - 5000
 const double mutationRate = 0.02; // 0.01- 0.1
 const double crossoverRate = 0.9; // 0.7 - 1
 const int eliteCount = 2; // 1 - 5
 
-// for (int i = 0; i < 2; i++)
-// {
-//     try
-//     {
-//         Graph graph = GraphReader.ReadGraph(graphs[i]);
-//         var tspProblem = new TSPProblem(graph);
-//         var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate);
-//         List<int> bestSolution = ga.Run();
-//         Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
-//     }
-//     catch (Exception ex)
-//     {
-//        skipedGraphs.Add(i);
-//     }
-// }
-//
-// for(int i = 0; i < skipedGraphs.Count; i++)
-// {
-//     Console.WriteLine($"{i + 1}. Pominięty plik: {graphs[skipedGraphs[i]]}");
-// }
+
+//RunFromFile(0, CrossoverType.OX);
+//RunFromFiles(CrossoverType.OX);
+TestRun(CrossoverType.CX);
 
 
-Graph graph = GraphReader.ReadGraph(graphs[0]);
-var tspProblem = new TSPProblem(graph);
-
-
-
-// var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate, crossoverRate, eliteCount, CrossoverType.PMX);
-// List<int> bestSolution = ga.Run();
-// Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}");
-
-CrossoverType[] crossoverTypes = { CrossoverType.OX, CrossoverType.PMX, CrossoverType.CX, CrossoverType.UX };
-
-for (int i = 0; i <= crossoverTypes.Length; i++)
+void RunFromFile(int fileIndex, CrossoverType crossoverType)
 {
-    var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate, crossoverRate, eliteCount, crossoverTypes[i]);
+    try
+    {
+        Graph graph = GraphReader.ReadGraph(graphs[fileIndex]);
+        var tspProblem = new TSPProblem(graph);
+        var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate,
+            crossoverRate, eliteCount, crossoverType);
+        List<int> bestSolution = ga.Run();
+        Console.WriteLine(
+            $"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}, Crossover Type: {crossoverType.ToString()}");
+    }
+    catch (Exception ex)
+    {
+        skipedGraphs.Add(fileIndex);
+    }
+}
+
+
+void RunFromFiles(CrossoverType crossoverType)
+{
+    for (int i = 0; i < graphs.Length; i++)
+    {
+        try
+        {
+            Graph graph = GraphReader.ReadGraph(graphs[i]);
+            var tspProblem = new TSPProblem(graph);
+            var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate,
+                crossoverRate, eliteCount, crossoverType);
+            List<int> bestSolution = ga.Run();
+            Console.WriteLine(
+                $"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}, Crossover Type: {crossoverType.ToString()}");
+        }
+        catch (Exception ex)
+        {
+            skipedGraphs.Add(i);
+        }
+    }
+
+    for (int i = 0; i < skipedGraphs.Count; i++)
+    {
+        Console.WriteLine($"{i + 1}. Pominięty plik: {graphs[skipedGraphs[i]]}");
+    }
+}
+
+void TestRun(CrossoverType crossoverType)
+{
+    Graph testGraph = new Graph(
+        "TSP TEST", "TEST", 6,
+        new Node[]
+        {
+            new Node(0, 0, 0),
+            new Node(1, 1, 0),
+            new Node(2, 10, 10),
+            new Node(3, 0, 4),
+            new Node(4, 2, 5),
+            new Node(5, 3, 9)
+        });
+
+    var tspProblem = new TSPProblem(testGraph);
+    var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate, crossoverRate,
+        eliteCount, crossoverType);
     List<int> bestSolution = ga.Run();
-    Console.WriteLine($"{graph.Name}, Dystans: {(int)(1 / (tspProblem.EvaluateFitness(bestSolution)))}, Crossover Type: {crossoverTypes[i].ToString()}");
+    Console.WriteLine(
+        $"{testGraph.Name}, Dystans: {(1 / (tspProblem.EvaluateFitness(bestSolution)))}, Crossover Type: {crossoverType.ToString()}");
+    Console.WriteLine($"Trasa: {string.Join(" -> ", bestSolution)}");
 }
