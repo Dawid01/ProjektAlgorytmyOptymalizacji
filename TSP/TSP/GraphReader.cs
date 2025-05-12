@@ -5,7 +5,7 @@ namespace TSP;
 
 public class GraphReader
 {
-    public static Graph ReadGraph(string path)
+    public static Graph ReadGraphTSP(string path)
     {
         string[] lines = File.ReadAllLines(path);
         string name = "";
@@ -60,4 +60,19 @@ public class GraphReader
         return new Graph(name, type, dimension, nodes);
     }
 
+    public struct VRPData
+    {
+        public Graph Graph { get; set; }
+        public int VehicleCount { get; set; }
+        public int VehicleCapacity { get; set; }
+        public Dictionary<int, int> Demands { get; set; }
+    }
+
+    // DO DOKONCZENIA
+    public static VRPData ReadGraphVRP(string path)
+    {
+        return new VRPData();
+    }
+
+    
 }

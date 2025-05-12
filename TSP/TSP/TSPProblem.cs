@@ -3,13 +3,12 @@
 public class TSPProblem : IGeneticProblem<List<int>>
 {
     private readonly Graph _graph;
-    private readonly Random _random = new Random();
+    private readonly Random _random;
 
     public TSPProblem(Graph graph, int seed = -1)
     {
         _graph = graph;
-        if (seed != -1)
-            _random = new Random(seed);
+        _random = seed != -1 ? new Random(seed) : new Random();
     }
 
     public List<List<int>> GenerateInitialPopulation(int size)
@@ -188,8 +187,7 @@ public class TSPProblem : IGeneticProblem<List<int>>
     }
 
 
-
-
+    
     public List<int> Mutate(List<int> individual)
     {
         int a = _random.Next(individual.Count);
