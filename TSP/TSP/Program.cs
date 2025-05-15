@@ -1,8 +1,11 @@
 ﻿using TSP;
 
-String basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "TSP_DATA\\data\\";
-string[] graphs = Directory.GetFiles(basePath, "*", SearchOption.TopDirectoryOnly);
+String basePathTSP = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "TSP_DATA\\data\\";
+string[] graphsTSP = Directory.GetFiles(basePathTSP, "*", SearchOption.TopDirectoryOnly);
 List<int> skipedGraphs = new List<int>();
+
+String basePathVRP= Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "VRP_DATA\\data\\";
+string[] graphsVRP = Directory.GetFiles(basePathVRP, "*", SearchOption.TopDirectoryOnly);
 
 const int populationSize = 50; //50-500
 const int maxGenerations = 1000; //500 - 5000
@@ -11,21 +14,21 @@ const double crossoverRate = 0.9; // 0.7 - 1
 const int eliteCount = 2; // 1 - 5
 
 
-//RunFromFile(0, CrossoverType.OX);
-//RunFromFiles(CrossoverType.OX);
+//RunFromFileTSP(0, CrossoverType.OX);
+//RunFromFilesTSP(CrossoverType.OX);
 //TestRunTSP(CrossoverType.CX);
 //TestRunTSP(CrossoverType.OX);
 //TestRunTSP(CrossoverType.PMX);
 //TestRunTSP(CrossoverType.UX);
-TestRunVRP();
+//TestRunVRP();
+RunFromFileVRP(0);
 
 
-
-void RunFromFile(int fileIndex, CrossoverType crossoverType)
+void RunFromFileTSP(int fileIndex, CrossoverType crossoverType)
 {
     try
     {
-        Graph graph = GraphReader.ReadGraphTSP(graphs[fileIndex]);
+        Graph graph = GraphReader.ReadGraphTSP(graphsTSP[fileIndex]);
         var tspProblem = new TSPProblem(graph);
         var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate,
             crossoverRate, eliteCount, crossoverType);
@@ -40,13 +43,13 @@ void RunFromFile(int fileIndex, CrossoverType crossoverType)
 }
 
 
-void RunFromFiles(CrossoverType crossoverType)
+void RunFromFilesTSP(CrossoverType crossoverType)
 {
-    for (int i = 0; i < graphs.Length; i++)
+    for (int i = 0; i < graphsTSP.Length; i++)
     {
         try
         {
-            Graph graph = GraphReader.ReadGraphTSP(graphs[i]);
+            Graph graph = GraphReader.ReadGraphTSP(graphsTSP[i]);
             var tspProblem = new TSPProblem(graph);
             var ga = new GeneticAlgorithm<List<int>>(tspProblem, populationSize, maxGenerations, mutationRate,
                 crossoverRate, eliteCount, crossoverType);
@@ -62,7 +65,7 @@ void RunFromFiles(CrossoverType crossoverType)
 
     for (int i = 0; i < skipedGraphs.Count; i++)
     {
-        Console.WriteLine($"{i + 1}. Pominięty plik: {graphs[skipedGraphs[i]]}");
+        Console.WriteLine($"{i + 1}. Pominięty plik: {graphsTSP[skipedGraphs[i]]}");
     }
 }
 
@@ -125,7 +128,7 @@ void TestRunVRP()
     int vehicleCount = 2;
     int vehicleCapacity = 50;
 
-    var vrpProblem = new VRPProblem(testGraph, vehicleCount, vehicleCapacity, demands, 5);
+    var vrpProblem = new VRPProblem(testGraph, vehicleCount, vehicleCapacity, demands);
     var ga = new GeneticAlgorithm<List<Vehicle>>(
         vrpProblem, populationSize, maxGenerations,
         mutationRate, crossoverRate, eliteCount, CrossoverType.CX
@@ -144,5 +147,28 @@ void TestRunVRP()
        string route = string.Join(" -> ", vehicle.Route);
        Console.WriteLine($"Pojazd {vehicle.Id + 1}: {route}");
    }
+}
 
+void RunFromFileVRP(int fileIndex)
+{
+    try
+    {
+        GraphReader.VRPData vrpData = GraphReader.ReadGraphVRP(graphsVRP[fileIndex]);
+        var vrpProblem = new VRPProblem(vrpData.Graph, vrpData.VehicleCount, vrpData.VehicleCapacity, vrpData.Demands);
+        var ga = new GeneticAlgorithm<List<Vehicle>>(
+            vrpProblem, populationSize, maxGenerations,
+            mutationRate, crossoverRate, eliteCount, CrossoverType.CX
+        );
+
+        List<Vehicle> bestSolution = ga.Run();
+
+        double bestFitness = vrpProblem.EvaluateFitness(bestSolution);
+        double bestDistance = 1.0 / bestFitness - 1; 
+
+        Console.WriteLine($"{vrpData.Graph.Name}, Dystans: {bestDistance:F2}");
+    }
+    catch (Exception ex)
+    {
+        skipedGraphs.Add(fileIndex);
+    }
 }
