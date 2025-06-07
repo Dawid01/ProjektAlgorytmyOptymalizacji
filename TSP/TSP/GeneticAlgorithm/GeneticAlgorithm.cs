@@ -1,6 +1,5 @@
 ﻿namespace TSP;
 
-
 public enum CrossoverType
 {
     OX,

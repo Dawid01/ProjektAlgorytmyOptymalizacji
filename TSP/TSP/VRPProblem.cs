@@ -12,7 +12,7 @@ public class VRPProblem : IGeneticProblem<List<Vehicle>>
     {
         _graph = graph;
         _vehicleCount = vehicleCount;
-        _vehicleCapacity = vehicleCapacity;
+        _vehicleCapacity = vehicleCapacity; 
         _demands = demands;
         _random = seed != -1 ? new Random(seed) : new Random();
     }
