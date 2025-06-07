@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.Design;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 
 namespace TSP.Algorithm;
 
 public class GeneticAlgorithm
 {
-    private Random random = new Random();
+    private readonly Graph _graph;
+    private readonly Random _random = new();
     public int ChromosomeLength { get; set; }
     public int PopulationLength { get; set; }
     public int SelectionPercent { get; set; }
@@ -16,21 +14,26 @@ public class GeneticAlgorithm
     public int RegenerationCounter { get; set; }
     public int ConvergenceRate { get; set; }
     public Chromosome[] Population { get; set; }
-    
-    public GeneticAlgorithm(int len, int? popLength = null,
-        int? selectionPercent = null, int? mutationRate = null,
-        int? maxRegenerationCount = null, int? convergenceRate = null){
+
+    public GeneticAlgorithm(Graph graph, int len, int popLength = 100, int selectionPercent = 50,
+        int mutationRate = 20, int maxRegenerationCount = int.MaxValue, int convergenceRate = 60)
+    {
+        _graph = graph;
         ChromosomeLength = len;
-        PopulationLength = popLength ?? 100;
-        SelectionPercent = selectionPercent ?? 50;
-        MutationProbability = mutationRate ?? 20;
-        RegenerationLimit = maxRegenerationCount ?? int.MaxValue;
+        PopulationLength = popLength;
+        SelectionPercent = selectionPercent;
+        MutationProbability = mutationRate;
+        RegenerationLimit = maxRegenerationCount;
         RegenerationCounter = 0;
-        ConvergenceRate = convergenceRate ?? 60;
+        ConvergenceRate = convergenceRate;
 
         Population = Enumerable.Range(0, PopulationLength)
-            .Select(r => new Chromosome(ChromosomeLength).Randomize())
-            .ToArray();
+            .Select(_ =>
+            {
+                var c = new Chromosome(ChromosomeLength).Randomize();
+                c.Evaluate(_graph);
+                return c;
+            }).ToArray();
     }
 
     public Chromosome Start()
@@ -38,6 +41,7 @@ public class GeneticAlgorithm
         while (Evaluation())
         {
             Selection(SelectionPercent);
+            Regeneration();
         }
 
         return Population.First();
@@ -45,23 +49,19 @@ public class GeneticAlgorithm
 
     public bool Evaluation()
     {
-        //sort population by fitness
-        Population = Population.OrderByDescending(p => p.Fitness).ToArray();
-        var bestChromosome = Population.First();
+        foreach (var c in Population)
+            c.Evaluate(_graph);
 
-        if (Math.Abs(bestChromosome.Fitness) < 2)
-        {
-            Debug.WriteLine("GA ended: Best chromosome found!");
-            return false;
-        }
+        Population = Population.OrderBy(p => p.Fitness).ToArray();
+        var best = Population.First();
 
         if (RegenerationCounter >= RegenerationLimit)
         {
-            Debug.WriteLine("GA ended: Maximum generations reached!");
+            Debug.WriteLine("GA ended: Max generations reached!");
             return false;
         }
 
-        if (Population.Count(c => Math.Abs(c.Fitness - bestChromosome.Fitness) < 1) >= 
+        if (Population.Count(c => Math.Abs(c.Fitness - best.Fitness) < 1) >=
             Math.Min((double)ConvergenceRate / 100, 0.9) * PopulationLength)
         {
             Debug.WriteLine("GA ended: Convergence detected!");
@@ -73,103 +73,81 @@ public class GeneticAlgorithm
 
     public void Selection(int percent)
     {
-        int keepCount = percent * PopulationLength / 100;
-        Population = Population.Take(keepCount).ToArray(); // Keep best solutions
-        Regeneration(); // Create new generation
+        int keep = Math.Max(2, percent * PopulationLength / 100);
+        Population = Population.Take(keep).ToArray();
+        Regeneration();
     }
-    
+
     public void Regeneration()
     {
         RegenerationCounter++;
-
-        if (RegenerationCounter % 100 == 0)
+        if (RegenerationCounter % 10 == 0)
             Debug.WriteLine($"Generation {RegenerationCounter}, Best Fitness: {Population[0].Fitness}");
 
-        var newPopulation = new List<Chromosome>();
-
-        for (var index = Population.Length; index < PopulationLength; index++)
+        var newPop = new List<Chromosome>();
+        while (Population.Length + newPop.Count < PopulationLength)
         {
-            var parent = GetRandomParent();
-            var child = Crossover(parent.mom, parent.dad);
-            Mutation(child, MutationProbability);
-            child.Evaluate();
-            newPopulation.Add(child);
+            var (mom, dad) = GetRandomParents();
+            var child = Crossover(mom, dad);
+            Mutation(child);
+            child.Evaluate(_graph);
+            newPop.Add(child);
         }
 
-        Population = Population.Concat(newPopulation).ToArray(); // Add new offspring
+        Population = Population.Concat(newPop).ToArray();
     }
 
-    public void Mutation(Chromosome chromosome, int rate)
+    public void Mutation(Chromosome chromosome)
     {
-        if (random.Next(0, 100) <= rate)
+        if (_random.Next(100) <= MutationProbability)
         {
-            int gene1 = random.Next(0, chromosome.Lenght - 1);
-            int gene2 = random.Next(0, chromosome.Lenght - 1);
-
-            if (gene1 != gene2)
-            {
-                var temp = chromosome.Genome[gene1];
-                chromosome.Genome[gene1] = chromosome.Genome[gene2];
-                chromosome.Genome[gene2] = temp;
-            }
+            int a = _random.Next(0, chromosome.Lenght);
+            int b = _random.Next(0, chromosome.Lenght);
+            (chromosome.Genome[a], chromosome.Genome[b]) = (chromosome.Genome[b], chromosome.Genome[a]);
         }
     }
-    protected T[] PerformPMX<T>(T[] parent1, T[] parent2)
-    {
-        int cut1 = random.Next(1, parent1.Length / 2);   
-        int cut2 = random.Next(cut1 + 1, parent1.Length - 1);  
-        var child = new T[parent1.Length];
-        var usedGenes = new HashSet<T>();
-
-        // Copy segment from Parent1
-        for (int i = cut1; i <= cut2; i++)
-        {
-            child[i] = parent1[i];
-            usedGenes.Add(parent1[i]); 
-        }
-
-        // Identify empty spots and fill from Parent2
-        var emptyIndices = Enumerable.Range(0, child.Length)
-            .Where(i => i < cut1 || i > cut2)
-            .ToList();
-
-        foreach (var gene in parent2.Concat(parent1))
-        {
-            if (emptyIndices.Count == 0) break;
-            if (!usedGenes.Contains(gene))
-            {
-                child[emptyIndices.First()] = gene;
-                emptyIndices.RemoveAt(0);
-            }
-        }
-
-        return child;
-    }
-
-    protected (Chromosome mom, Chromosome dad) GetRandomParent()
-    {
-        int rand1 = random.Next(0, Population.Length);
-        int rand2;
-
-        do
-        {
-            rand2 = random.Next(0, Population.Length);
-        } while (rand1 == rand2); // Ensure different parents
-
-        return (Population[rand1], Population[rand2]);
-    }
-
 
     public Chromosome Crossover(Chromosome mom, Chromosome dad)
     {
         var child = new Chromosome(ChromosomeLength)
         {
-            Genome = PerformPMX(mom.Genome, dad.Genome)
+            Genome = PMX(mom.Genome, dad.Genome)
         };
-
         return child;
     }
 
+    private (Chromosome mom, Chromosome dad) GetRandomParenzts()
+    {
+        int i = _random.Next(Population.Length);
+        int j;
+        do j = _random.Next(Population.Length); while (i == j);
+        return (Population[i], Population[j]);
+    }
 
+    private T[] PMX<T>(T[] p1, T[] p2)
+    {
+        int size = p1.Length;
+        int cut1 = _random.Next(1, size - 2);
+        int cut2 = _random.Next(cut1 + 1, size - 1);
+
+        T[] child = new T[size];
+        Array.Fill(child, default);
+
+        for (int i = cut1; i < cut2; i++)
+            child[i] = p1[i];
+
+        for (int i = 0; i < size; i++)
+        {
+            if (i >= cut1 && i < cut2) continue;
+            T gene = p2[i];
+            while (child.Contains(gene))
+            {
+                int index = Array.IndexOf(p2, gene);
+                gene = p1[index];
+            }
+            child[i] = gene;
+        }
+
+        return child;
+    }
 }
-

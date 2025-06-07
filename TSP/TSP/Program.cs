@@ -7,20 +7,25 @@ Console.WriteLine(graph.ToString());
 
 Console.WriteLine("Starting Genetic Algorithm...");
 
-int chromosomeLength = 10;  
-int populationSize = 100;   
-int selectionPercent = 50;  
-int mutationRate = 20;      
-int maxGenerations = 1000;  
+int chromosomeLength = graph.Dimension;  // <== ważne!
+int populationSize = 30;
+int selectionPercent = 50;
+int mutationRate = 20;
+int maxGenerations = 200;
 
 GeneticAlgorithm ga = new GeneticAlgorithm(
-    chromosomeLength, populationSize, selectionPercent, mutationRate, maxGenerations
+    graph,
+    chromosomeLength,
+    populationSize,
+    selectionPercent,
+    mutationRate,
+    maxGenerations
 );
 
 Chromosome bestSolution = ga.Start();
 
 Console.WriteLine("Best Chromosome Found:");
-Console.WriteLine($"Genome: {string.Join(", ", bestSolution.Genome)}");
-Console.WriteLine($"Fitness: {bestSolution.Fitness}");
+Console.WriteLine($"Genome: {string.Join(" -> ", bestSolution.Genome)}");
+Console.WriteLine($"Route Length (Fitness): {bestSolution.Fitness}");
 
 Console.WriteLine("Genetic Algorithm Finished.");

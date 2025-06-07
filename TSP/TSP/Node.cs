@@ -17,4 +17,11 @@ public struct Node
     {
         return $"{Index} [x: {X}, y: {Y}]";
     }
+    
+    public double DistanceTo(Node other)
+    {
+        int dx = this.X - other.X;
+        int dy = this.Y - other.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
 }
