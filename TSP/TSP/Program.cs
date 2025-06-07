@@ -7,21 +7,31 @@ List<int> skipedGraphs = new List<int>();
 String basePathVRP= Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\") + "VRP_DATA\\data\\";
 string[] graphsVRP = Directory.GetFiles(basePathVRP, "*", SearchOption.TopDirectoryOnly);
 
-const int populationSize = 50; //50-500
-const int maxGenerations = 1000; //500 - 5000
-const double mutationRate = 0.02; // 0.01- 0.1
-const double crossoverRate = 0.9; // 0.7 - 1
-const int eliteCount = 2; // 1 - 5
+int populationSize = 450; //50-500
+int maxGenerations = 5000; //500 - 5000
+double mutationRate = 0.01; // 0.01- 0.1
+double crossoverRate = 0.7; // 0.7 - 1
+int eliteCount = 1; // 1 - 5
 
 
-//RunFromFileTSP(0, CrossoverType.OX);
+//RunFromFileTSP(11, CrossoverType.OX);
+//RunFromFileTSP(11, CrossoverType.CX);
+//RunFromFileTSP(11, CrossoverType.PMX);
+//RunFromFileTSP(11, CrossoverType.UX);
 //RunFromFilesTSP(CrossoverType.OX);
 //TestRunTSP(CrossoverType.CX);
 //TestRunTSP(CrossoverType.OX);
 //TestRunTSP(CrossoverType.PMX);
 //TestRunTSP(CrossoverType.UX);
 //TestRunVRP();
-RunFromFileVRP(0);
+//RunFromFileVRP(0);
+
+while (mutationRate <= 0.1)
+{
+    Console.WriteLine(mutationRate);
+    RunFromFileTSP(11, CrossoverType.UX);
+    mutationRate += 0.01;
+}
 
 
 void RunFromFileTSP(int fileIndex, CrossoverType crossoverType)
