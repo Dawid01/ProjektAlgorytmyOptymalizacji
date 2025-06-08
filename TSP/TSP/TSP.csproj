@@ -8,4 +8,9 @@
     </PropertyGroup>
 
 
+
+    <ItemGroup>
+      <Folder Include="TSP_DATA\" />
+    </ItemGroup>
+
 </Project>
